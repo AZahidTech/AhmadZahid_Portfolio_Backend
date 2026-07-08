@@ -64,9 +64,11 @@ const sendMessage = async (req, res) => {
         `,
       };
 
-      // Send both emails
-      await transporter.sendMail(visitorMailOptions);
-      await transporter.sendMail(adminMailOptions);
+      // Send both emails concurrently to optimize serverless performance
+      await Promise.all([
+        transporter.sendMail(visitorMailOptions),
+        transporter.sendMail(adminMailOptions)
+      ]);
 
       return res.status(201).json({
         success: true,
