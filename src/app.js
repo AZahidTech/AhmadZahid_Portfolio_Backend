@@ -20,8 +20,24 @@ app.set('trust proxy', 1);
 app.use(helmet());
 
 // CORS configuration (Restrict to front-end origin in production)
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'https://ahmadzahid-portfolio.vercel.app',
+  'http://localhost:5173'
+].filter(Boolean).map(url => url.replace(/\/$/, ''));
+
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    if (allowedOrigins.includes(normalizedOrigin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200,
 };
